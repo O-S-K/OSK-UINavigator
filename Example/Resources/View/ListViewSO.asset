@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: ListViewSO
   m_EditorClassIdentifier: 
   _listView:
-  - path: View/WinUI.prefab
-    depth: 0
-    view: {fileID: 2877380379264299323, guid: eb4f5da3636391548863b06a07a70d39, type: 3}
-  - path: View/WrongUI.prefab
-    depth: 1
-    view: {fileID: 1286883603557997864, guid: 9504e78db0f4bdc4d9ee9a72a249b29a, type: 3}
   - path: View/IngameUI.prefab
     depth: 0
     view: {fileID: 6086713787914454507, guid: 1626fb303bfceb742a196679766488b3, type: 3}
   - path: View/MenuUI.prefab
     depth: 0
     view: {fileID: 3278428550634650433, guid: 5ccda247c982733439f1ec518215f564, type: 3}
+  - path: View/WinUI.prefab
+    depth: 4
+    view: {fileID: 2877380379264299323, guid: eb4f5da3636391548863b06a07a70d39, type: 3}
+  - path: View/WrongUI.prefab
+    depth: 5
+    view: {fileID: 1286883603557997864, guid: 9504e78db0f4bdc4d9ee9a72a249b29a, type: 3}

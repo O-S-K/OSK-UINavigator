@@ -7,6 +7,7 @@ namespace OSK.UI
     public partial class UINavigator : MonoBehaviour
     {
         #region Singleton
+        // singleton on scene
         public static UINavigator Instance;
         #endregion
 
@@ -44,76 +45,76 @@ namespace OSK.UI
  
         #region Views
 
-        public T Spawn<T>(string path, object[] data = null, bool isCache = true, bool isHidePrevPopup = false)
+        public static T Spawn<T>(string path, object[] data = null, bool isCache = true, bool isHidePrevPopup = false)
             where T : View
         {
-            return RootUI.Spawn<T>(path, data, isCache, isHidePrevPopup);
+            return Instance.RootUI.Spawn<T>(path, data, isCache, isHidePrevPopup);
         }
 
-        public T SpawnCache<T>(T view, object[] data = null, bool isHidePrevPopup = false) where T : View
+        public static T SpawnCache<T>(T view, object[] data = null, bool isHidePrevPopup = false) where T : View
         {
-            return RootUI.Spawn(view, data, isHidePrevPopup);
+            return Instance.RootUI.Spawn(view, data, isHidePrevPopup);
         }
 
-        public T Open<T>(object[] data = null, bool isHidePrevPopup = false) where T : View
+        public static T Open<T>(object[] data = null, bool isHidePrevPopup = false) where T : View
         {
-            return RootUI.Open<T>(data, isHidePrevPopup);
+            return Instance.RootUI.Open<T>(data, isHidePrevPopup);
         }
 
-        public void OpenPrevious()
+        public static void OpenPrevious()
         {
-            RootUI.OpenPrevious();
+            Instance.RootUI.OpenPrevious();
         }
 
-        public T TryOpen<T>(object[] data = null, bool isHidePrevPopup = false) where T : View
+        public static T TryOpen<T>(object[] data = null, bool isHidePrevPopup = false) where T : View
         {
-            return RootUI.TryOpen<T>(data, isHidePrevPopup);
+            return Instance.RootUI.TryOpen<T>(data, isHidePrevPopup);
         }
 
-        public void Open(View view, object[] data = null, bool isHidePrevPopup = false)
+        public static void Open(View view, object[] data = null, bool isHidePrevPopup = false)
         {
-            RootUI.Open(view, data, isHidePrevPopup);
+            Instance.RootUI.Open(view, data, isHidePrevPopup);
         }
 
-        public AlertView OpenAlert<T>(AlertSetup setup) where T : AlertView
+        public static AlertView OpenAlert<T>(AlertSetup setup) where T : AlertView
         {
-            return RootUI.OpenAlert<T>(setup);
+            return Instance.RootUI.OpenAlert<T>(setup);
         }
 
-        public void Hide(View view)
+        public static void Hide(View view)
         {
-            RootUI.Hide(view);
+            Instance.RootUI.Hide(view);
         }
 
-        public void HideAll()
+        public static void HideAll()
         {
-            RootUI.HideAll();
+            Instance.RootUI.HideAll();
         }
 
-        public void HideAllIgnoreView<T>() where T : View
+        public static void HideAllIgnoreView<T>() where T : View
         {
-            RootUI.HideIgnore<T>();
+            Instance.RootUI.HideIgnore<T>();
         }
 
-        public void HideAllIgnoreView<T>(T[] viewsToKeep) where T : View
+        public static void HideAllIgnoreView<T>(T[] viewsToKeep) where T : View
         {
-            RootUI.HideIgnore(viewsToKeep);
+            Instance.RootUI.HideIgnore(viewsToKeep);
         }
 
-        public void Delete<T>(T popup) where T : View
+        public static void Delete<T>(T popup) where T : View
         {
-            RootUI.Delete<T>(popup);
+            Instance.RootUI.Delete<T>(popup);
         }
 
 
-        public T Get<T>(bool isInitOnScene = true) where T : View
+        public static T Get<T>(bool isInitOnScene = true) where T : View
         {
-            return RootUI.Get<T>(isInitOnScene);
+            return Instance.RootUI.Get<T>(isInitOnScene);
         }
 
-        public T GetOrOpen<T>(object[] data = null, bool hidePrevView = false) where T : View
+        public static T GetOrOpen<T>(object[] data = null, bool hidePrevView = false) where T : View
         {
-            var view = RootUI.Get<T>();
+            var view = Instance.RootUI.Get<T>();
             if (view == null)
             {
                 if (!view.IsShowing)
@@ -128,14 +129,14 @@ namespace OSK.UI
             return view;
         }
 
-        public bool IsShowing(View view)
+        public static bool IsShowing(View view)
         {
-            return RootUI.Get<View>().IsShowing;
+            return Instance.RootUI.Get<View>().IsShowing;
         }
 
-        public List<View> GetAll(bool isInitOnScene)
+        public static List<View> GetAll(bool isInitOnScene)
         {
-            return RootUI.GetAll(isInitOnScene);
+            return Instance.RootUI.GetAll(isInitOnScene);
         }
 
         #endregion

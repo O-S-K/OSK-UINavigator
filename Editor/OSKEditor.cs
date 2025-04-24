@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OSK.UI;
@@ -34,6 +35,45 @@ namespace OSK.UI
             UnityEditor.PackageManager.Client.Add(packageName);
             UnityEditor.EditorUtility.DisplayDialog("OSK-Framework", "Package added successfully", "OK");
             UnityEditor.AssetDatabase.Refresh();
+        }
+        
+        [MenuItem("OSK-Framework/SO Files/List View")]
+        public static void LoadListView()
+        {
+            FindViewDataSOAssets();
+        }
+        
+        
+        private static void FindViewDataSOAssets()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:ListViewSO");
+            if (guids.Length == 0)
+            {
+                Debug.LogError("No ListViewSO found in the project.");
+                return;
+            }
+
+            var viewData = new List<ListViewSO>();
+            foreach (var guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                ListViewSO v = AssetDatabase.LoadAssetAtPath<ListViewSO>(path);
+                viewData.Add(v);
+            }
+
+            if (viewData.Count == 0)
+            {
+                Debug.LogError("No ListViewSO found in the project.");
+            }
+            else
+            {
+                foreach (var v in viewData)
+                {
+                    Debug.Log("ListViewSO found: " + v.name);
+                    Selection.activeObject = v;
+                    EditorGUIUtility.PingObject(v);
+                }
+            }
         }
     }
 }

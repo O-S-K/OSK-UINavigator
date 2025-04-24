@@ -16,7 +16,7 @@ namespace Example
             base.Initialize(rootUI);
             wrongButton.onClick.AddListener(() =>
             {
-                var wrong = UINavigator.Instance.Open<WrongUI>();
+                var wrong = UINavigator.Open<WrongUI>();
                 wrong.SetData(new AlertSetup()
                 {
                     message = "Wrong",
@@ -26,12 +26,12 @@ namespace Example
         
             winButton.onClick.AddListener(() =>
             {
-                UINavigator.Instance.Open<WinUI>();
+                UINavigator.Open<WinUI>();
             });
             backMenuButton.onClick.AddListener(() =>
             {
                 Hide();
-                UINavigator.Instance.Open<MenuUI>();
+                UINavigator.Open<MenuUI>();
             });
         }
 

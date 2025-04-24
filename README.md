@@ -7,9 +7,6 @@ It supports stack-based navigation, smooth transitions, caching, and dynamic vie
 
 ## ✨ Key Features
 
-- **Singleton Pattern**  
-  Global access to `UINavigator.Instance` for easy integration.
-
 - **Root UI Management**  
   Handles a centralized `RootUI` with canvas and camera access.
 
@@ -45,13 +42,13 @@ If not set manually, it attempts to find it in the scene on initialization (`aut
 
 ```csharp
 // Open a popup view with data
-UINavigator.Instance.Open<MyPopupView>(new object[] { "Hello", 123 });
+UINavigator.Open<MyPopupView>(new object[] { "Hello", 123 });
 
 // Hide a specific view
-UINavigator.Instance.Hide(myPopupView);
+UINavigator.Hide(myPopupView);
 
 // Open an alert
-UINavigator.Instance.OpenAlert<MyAlertView>(new AlertSetup
+UINavigator.OpenAlert<MyAlertView>(new AlertSetup
 {
     title = "Warning",
     message = "Are you sure you want to quit?"

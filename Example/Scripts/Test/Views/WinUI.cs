@@ -16,7 +16,7 @@ namespace Example
             closeButton.onClick.AddListener(Hide);
             wrongButton.onClick.AddListener(() =>
             {
-                var wrong = UINavigator.Instance.Open<WrongUI>();
+                var wrong = UINavigator.Open<WrongUI>();
                 wrong.SetData(new AlertSetup()
                 {
                     message = "Get reward",

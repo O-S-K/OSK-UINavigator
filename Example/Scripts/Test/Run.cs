@@ -8,7 +8,7 @@ namespace Example
     {
         private void Start()
         {
-            UINavigator.Instance.Open<MenuUI>();
+            UINavigator.Open<MenuUI>();
         }
     }
 }

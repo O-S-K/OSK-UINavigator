@@ -2,7 +2,6 @@
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace OSK.UI
@@ -19,37 +18,12 @@ namespace OSK.UI
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
-            
-            if(GUILayout.Button("Create Data UI SO"))
-            {
-                if(uiManager.listViewSO == null)
-                {
-                    uiManager.listViewSO = ScriptableObject.CreateInstance<ListViewSO>();
-                    string path = "Assets/Resources/View/ListViewSO.asset";
-                    if(File.Exists(path))
-                    {
-                        Debug.LogError("ListViewSO already exists at " + path);
-                        return;
-                    }
-                    if (!Directory.Exists("Assets/Resources/View"))
-                    {
-                        Directory.CreateDirectory("Assets/Resources/View");
-                    } 
-                    AssetDatabase.CreateAsset(uiManager.listViewSO, path);
-                    AssetDatabase.SaveAssets();
-                    EditorUtility.SetDirty(uiManager.listViewSO);
-                }
-                else
-                {
-                    Debug.LogError("ListViewSO already exists.");
-                }
-            }
 
             if (GUILayout.Button("Select Data UI SO"))
             {
                 FindViewDataSOAssets();
             }
-
+ 
             if (GUILayout.Button("Setup Canvas"))
             {
                 uiManager.SetupCanvas();
@@ -72,7 +46,6 @@ namespace OSK.UI
                 EditorUtility.SetDirty(target);
             }
         }
-         
 
         private void ShowListViewHistory()
         {
@@ -80,10 +53,12 @@ namespace OSK.UI
             if (views.Count == 0) return;
             foreach (var view in views)
             {
+                if(view == null)
+                    continue;
                 EditorGUILayout.LabelField(view.name);
             }
-        } 
-
+        }
+ 
 
         private void FindViewDataSOAssets()
         {
@@ -131,9 +106,10 @@ namespace OSK.UI
             List<View> views = uiManager.GetAll(true);
             foreach (var _view in views)
             {
+                EditorGUILayout.BeginHorizontal();
+                
                 if(_view == null)
                     continue;
-                EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(_view.name, GUILayout.Width(400));
 
                 bool isVisible = uiManager.Get(_view).IsShowing;

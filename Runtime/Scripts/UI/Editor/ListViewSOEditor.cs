@@ -11,7 +11,8 @@ namespace OSK.UI
     {
         private Dictionary<EViewType, bool> viewTypeFoldouts = new Dictionary<EViewType, bool>();
         private ListViewSO listViewSO = null;
-        
+        private List<View> listViews = null;
+
         private void OnEnable() => listViewSO = (ListViewSO)target;
 
         public override void OnInspectorGUI()
@@ -50,6 +51,12 @@ namespace OSK.UI
                 listViewSO.Views.Add(new DataViewUI { depth = 0, view = null });
                 EditorUtility.SetDirty(target);
             }
+            
+            if (GUILayout.Button("Set Depth To Prefab"))
+            {
+                SetDepthSOToRrefab();
+                EditorUtility.SetDirty(target);
+            }
 
             if (GUILayout.Button("Refresh"))
             {
@@ -83,13 +90,13 @@ namespace OSK.UI
 
         public void AddAllViewFormResources()
         {
-            var listViews = Resources.LoadAll<View>("").ToList().FindAll(x => x.isAddToViewManager);
-            if(listViews.Count == 0)
+            listViews = Resources.LoadAll<View>("").ToList().FindAll(x => x.isAddToViewManager);
+            if (listViews.Count == 0)
             {
                 Debug.LogWarning("No views found in Resources folder");
                 return;
             }
-            
+
             foreach (var popup in listViews)
             {
                 if (listViewSO.Views.Any(x => x.view == popup))
@@ -103,29 +110,74 @@ namespace OSK.UI
                 data.depth = popup.depth;
                 listViewSO.Views.Add(data);
             }
+
+            SortViews(listViewSO);
+        }
+
+        private void RefreshListUI()
+        {
+            SetDepthFromRes();
             SortViews(listViewSO);
         }
         
-        private void RefreshListUI()
+        private void SetDepthFromRes()
         {
-            SortViews(listViewSO);
+            foreach (var viewData in listViewSO.Views)
+            {
+                if (viewData.view == null) continue;
+
+                viewData.depth = viewData.view.depth;
+            }
         }
- 
+
+        private void SetDepthSOToRrefab()
+        {
+            foreach (var viewData in listViewSO.Views)
+            {
+                if (viewData.view == null) continue;
+
+                // Cập nhật depth trong view
+                viewData.view.depth = viewData.depth;
+
+                // Đánh dấu prefab là dirty (nếu là prefab)
+                EditorUtility.SetDirty(viewData.view);
+
+#if UNITY_2021_1_OR_NEWER
+                // Nếu là prefab asset, thì save lại
+                var prefabStage = PrefabUtility.GetPrefabInstanceHandle(viewData.view);
+                if (prefabStage == null)
+                {
+                    // Là prefab asset chứ không phải instance trong scene
+                    string prefabPath = AssetDatabase.GetAssetPath(viewData.view);
+                    if (!string.IsNullOrEmpty(prefabPath))
+                    {
+                        AssetDatabase.SaveAssetIfDirty(viewData.view);
+                    }
+                }
+#else
+        // Với Unity cũ hơn
+        PrefabUtility.RecordPrefabInstancePropertyModifications(viewData.view);
+#endif
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
 
         private void SortViews(ListViewSO listViewSO)
         {
             listViewSO.Views.Sort((x, y) =>
             {
-                int typeComparison = x.view.viewType.CompareTo(y.view.viewType);
-                if (typeComparison != 0)
+                int depthComparison = x.depth.CompareTo(y.depth);
+                if (depthComparison != 0)
                 {
-                    return typeComparison;
+                    return depthComparison;
                 }
-                return x.depth.CompareTo(y.depth);
+
+                return x.view.viewType.CompareTo(y.view.viewType);
             });
 
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
             EditorUtility.SetDirty(target);
         }
 
@@ -142,7 +194,11 @@ namespace OSK.UI
                     if (currentViewType != dataView.view.viewType)
                     {
                         currentViewType = dataView.view.viewType;
-                        viewTypeFoldouts.TryAdd(currentViewType.Value, true);
+
+                        if (!viewTypeFoldouts.ContainsKey(currentViewType.Value))
+                        {
+                            viewTypeFoldouts[currentViewType.Value] = true;
+                        }
 
                         EditorGUILayout.Space();
                         viewTypeFoldouts[currentViewType.Value] = EditorGUILayout.Foldout(
@@ -159,12 +215,12 @@ namespace OSK.UI
                     currentViewType = null;
                     dataView.view = (View)EditorGUILayout.ObjectField(dataView.view, typeof(View),
                         allowSceneObjects: false, GUILayout.Width(200));
-                    
+
                     if (GUILayout.Button("Remove", GUILayout.Width(60)))
                     {
                         listViewSO.Views.Remove(dataView);
                         EditorUtility.SetDirty(target);
-                        return; 
+                        return;
                     }
                 }
             }
@@ -202,7 +258,7 @@ namespace OSK.UI
             {
                 listViewSO.Views.RemoveAt(index);
                 EditorUtility.SetDirty(target);
-                return; 
+                return;
             }
 
             EditorGUILayout.EndHorizontal();

@@ -15,7 +15,7 @@ namespace Example
             ingameButton.onClick.AddListener(() =>
             {
                 Hide();
-                UINavigator.Instance.Open<IngameUI>();
+                UINavigator.Open<IngameUI>();
             });
         }
 

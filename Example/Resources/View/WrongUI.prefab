@@ -86,7 +86,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewType: 1
-  depth: 1
+  depth: 5
   isAddToViewManager: 1
   isPreloadSpawn: 1
   isRemoveOnHide: 0
