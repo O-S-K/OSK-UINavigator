@@ -28,6 +28,7 @@ namespace OSK.UI
 
         [SerializeField] private bool isPortrait = true;
         [SerializeField] private bool dontDestroyOnLoad = true;
+        [SerializeField] private bool enableLog = true;
 
         public Canvas GetCanvas => _canvas;
         public CanvasScaler GetCanvasScaler => _canvasScaler;
@@ -104,17 +105,14 @@ namespace OSK.UI
 
         #endregion
 
-        #region Spawn
+         #region Spawn
 
         public T Spawn<T>(T view, object[] data, bool hidePrevView) where T : View
         {
-            if (IsExist<T>())
-                return Open<T>(data, hidePrevView);
-
-            return SpawnViewCache(view);
+            return IsExist<T>() ? Open<T>(data, hidePrevView) : SpawnViewCache(view);
         }
 
-        public T Spawn<T>(string path, object[] data, bool isCache, bool hidePrevView) where T : View
+        public T Spawn<T>(string path, object[] data, bool cache, bool hidePrevView) where T : View
         {
             if (IsExist<T>())
             {
@@ -122,109 +120,110 @@ namespace OSK.UI
             }
 
             var view = SpawnFromResource<T>(path);
-            if (isCache)
-            {
-                if (_listCacheView.Contains(view))
-                    _listCacheView.Add(view);
-            }
+            if (!cache) return view;
 
-            return view;
-        }
-
-        public T SpawnViewCache<T>(T _view) where T : View
-        {
-            var view = Instantiate(_view, _viewContainer);
-            view.gameObject.SetActive(false);
-            view.Initialize(this);
-
-            view.transform.localPosition = Vector3.zero;
-            view.transform.localScale = Vector3.one;
-
-            Debug.Log($"[View] Spawn view: {view.name}");
-            if (!_listCacheView.Contains(view))
+            if (_listCacheView.Contains(view))
                 _listCacheView.Add(view);
+
             return view;
         }
 
-        public T SpawnAlert<T>(T _view) where T : View
+        public T SpawnViewCache<T>(T view) where T : View
         {
-            var view = Instantiate(_view, _viewContainer);
-            view.gameObject.SetActive(false);
-            view.Initialize(this);
+            var _view = Instantiate(view, _viewContainer);
+            _view.gameObject.SetActive(false);
+            _view.Initialize(this);
 
-            view.transform.localPosition = Vector3.zero;
-            view.transform.localScale = Vector3.one;
+            _view.transform.localPosition = Vector3.zero;
+            _view.transform.localScale = Vector3.one;
 
-            Debug.Log($"[View] Spawn Alert view: {view.name}");
-            return view;
+            LLoger($"[View] Spawn view: {_view.name}", isLog: enableLog);
+            if (!_listCacheView.Contains(_view))
+                _listCacheView.Add(_view);
+            return _view;
+        }
+
+        public T SpawnAlert<T>(T view) where T : View
+        {
+            var _view = Instantiate(view, _viewContainer);
+            _view.gameObject.SetActive(false);
+            _view.Initialize(this);
+
+            _view.transform.localPosition = Vector3.zero;
+            _view.transform.localScale = Vector3.one;
+
+            LLoger($"[View] Spawn Alert view: {_view.name}", isLog: enableLog);
+            return _view;
         }
 
         #endregion
 
         #region Open
 
-        public View Open(View _view, object[] data = null, bool hidePrevView = false, bool checkShowing = true)
+        public View Open(View view, object[] data = null, bool hidePrevView = false, bool checkShowing = true)
         {
-            var view = _listCacheView.FirstOrDefault(v => v == _view);
+            var _view = _listCacheView.FirstOrDefault(v => v == view);
             if (hidePrevView && _viewHistory.Count > 0)
             {
                 var prevView = _viewHistory.Peek();
                 prevView.Hide();
             }
 
-            if (view == null)
+            if (_view == null)
             {
-                var viewPrefab = _listViewInit.FirstOrDefault(v => v == _view);
+                var viewPrefab = _listViewInit.FirstOrDefault(v => v == view);
                 if (viewPrefab == null)
                 {
-                    Debug.LogError($"[View] Can't find view prefab for type: {_view.GetType().Name}");
+                    LLoger($"[View] Can't find view prefab for type: {view.GetType().Name}", isLog: enableLog);
                     return null;
                 }
 
-                view = SpawnViewCache(viewPrefab);
+                _view = SpawnViewCache(viewPrefab);
             }
 
-            if (view.IsShowing && checkShowing)
+            if (_view.IsShowing && checkShowing)
             {
-                return view;
+                LLoger($"[View] Opened view IsShowing: {_view.name}", isLog: enableLog);
+                return _view;
             }
 
-            view.Open(data);
-            _viewHistory.Push(view);
-            Debug.Log($"[View] Opened view: {view.name}");
-            return view;
+            _view.Open(data);
+            _viewHistory.Push(_view);
+            LLoger($"[View] Opened view: {_view.name}", isLog: enableLog);
+            return _view;
         }
 
         public T Open<T>(object[] data = null, bool hidePrevView = false, bool checkShowing = true) where T : View
         {
-            var view = _listCacheView.FirstOrDefault(v => v is T) as T;
+            var _view = _listCacheView.FirstOrDefault(v => v is T && v != null) as T;
             if (hidePrevView && _viewHistory.Count > 0)
             {
                 var prevView = _viewHistory.Peek();
                 prevView.Hide();
             }
 
-            if (view == null)
+            if (_view == null)
             {
-                var viewPrefab = _listViewInit.FirstOrDefault(v => v is T) as T;
+                var viewPrefab = _listViewInit.FirstOrDefault(v => v is T && v !) as T;
                 if (viewPrefab == null)
                 {
-                    Debug.LogError($"[View] Can't find view prefab for type: {typeof(T).Name}");
+                    LLoger($"[View] Can't find view prefab for type: {typeof(T).Name}", isLog: enableLog);
                     return null;
                 }
 
-                view = SpawnViewCache(viewPrefab);
+                _view = SpawnViewCache(viewPrefab);
             }
 
-            if (view.IsShowing && checkShowing)
+            if (_view.IsShowing && checkShowing)
             {
-                return view;
+                LLoger($"[View] Opened view: {_view.name}", isLog: enableLog);
+                return _view;
             }
 
-            view.Open(data);
-            _viewHistory.Push(view);
-            Debug.Log($"[View] Opened view: {view.name}");
-            return view;
+            _view.Open(data);
+            _viewHistory.Push(_view);
+            LLoger($"[View] Opened view: {_view.name}", isLog: enableLog);
+            return _view;
         }
 
         public T TryOpen<T>(object[] data = null, bool hidePrevView = false) where T : View
@@ -232,29 +231,61 @@ namespace OSK.UI
             return Open<T>(data, hidePrevView, false);
         }
 
-        public void OpenPrevious(object[] data = null)
+        /// <summary>
+        /// Open previous view in history
+        /// </summary>
+        public View OpenPrevious(object[] data = null, bool isHidePrevPopup = false)
         {
-            if (_viewHistory.Count > 0)
+            if (_viewHistory.Count <= 1)
             {
-                var prevView = _viewHistory.Pop();
-                prevView.Open(data);
-                Debug.Log($"[View] Open previous view: {prevView.name}");
+                LLoger("[View] No previous view to open", isLog: enableLog);
+                return null;
             }
+
+            // Pop current view
+            var currentView = _viewHistory.Pop();
+
+            if (isHidePrevPopup && currentView != null && !currentView.Equals(null))
+            {
+                try
+                {
+                    currentView.Hide();
+                }
+                catch (Exception ex)
+                {
+                    LLoger($"[View] Error hiding current view: {ex.Message}", isLog: enableLog);
+                }
+            }
+
+            // Peek previous view
+            var previousView = _viewHistory.Peek();
+            if (previousView == null || previousView.Equals(null))
+            {
+                LLoger("[View] Previous view is null or destroyed", isLog: enableLog);
+                return null;
+            }
+
+            previousView.Open(data);
+            LLoger($"[View] Opened previous view: {previousView.name}", isLog: enableLog);
+            return previousView;
         }
 
+        /// <summary>
+        /// Spawn and open alert view, destroy it when closed
+        /// </summary>
         public AlertView OpenAlert<T>(AlertSetup setup) where T : AlertView
         {
             var viewPrefab = _listViewInit.FirstOrDefault(v => v is T) as T;
             if (viewPrefab == null)
             {
-                Debug.LogError($"[View] Can't find view prefab for type: {typeof(T).Name}");
+                LLoger($"[View] Can't find view prefab for type: {typeof(T).Name}", isLog: enableLog);
                 return null;
             }
 
             var view = SpawnAlert(viewPrefab);
             view.Open();
             view.SetData(setup);
-            Debug.Log($"[View] Opened view: {view.name}");
+            LLoger($"[View] Opened view: {view.name}", isLog: enableLog);
             return view;
         }
 
@@ -262,50 +293,47 @@ namespace OSK.UI
 
         #region Get
 
-        public View Get(View _view, bool isInitOnScene = true)
+        public View Get(View view, bool isInitOnScene)
         {
-            var view = GetAll(isInitOnScene).Find(x => x == _view);
-            if (view == null)
+            var _view = GetAll(isInitOnScene).Find(x => x == view);
+            if (_view == null)
             {
-                Debug.LogError($"[View] Can't find view: {_view.name}");
+                LLoger($"[View] Can't find view: {view.name}", isLog: enableLog);
                 return null;
             }
 
-            if (!view.isInitOnScene)
+            if (!_view.isInitOnScene)
             {
-                Debug.LogError($"[View] {_view.name} is not init on scene");
+                LLoger($"[View] {view.name} is not init on scene", isLog: enableLog);
             }
 
-            return view;
+            return _view;
         }
 
         public T Get<T>(bool isInitOnScene = true) where T : View
         {
-            var view = GetAll(isInitOnScene).Find(x => x is T) as T;
-            if (view == null)
+            var _view = GetAll(isInitOnScene).Find(x => x is T) as T;
+            if (_view == null)
             {
-                Debug.LogError($"[View] Can't find view: {typeof(T).Name}");
+                LLoger($"[View] Can't find view: {typeof(T).Name}", isLog: enableLog);
                 return null;
             }
 
-            if (!view.isInitOnScene)
+            if (!_view.isInitOnScene)
             {
-                Debug.LogError($"[View] {typeof(T).Name} is not init on scene");
+                LLoger($"[View] {typeof(T).Name} is not init on scene", isLog: enableLog);
             }
 
-            return view;
+            return _view;
         }
 
-        public View Get(View _view)
+        public View Get(View view)
         {
-            var view = GetAll(true).Find(x => x == _view);
-            if (view == null)
-            {
-                Debug.LogError($"[View] Can't find view: {_view.name}");
-                return null;
-            }
+            var _view = GetAll(true).Find(x => x == view);
+            if (_view != null) return _view;
 
-            return view;
+            LLoger($"[View] Can't find view: {view.name}", isLog: enableLog);
+            return null;
         }
 
         public List<View> GetAll(bool isInitOnScene)
@@ -314,13 +342,10 @@ namespace OSK.UI
                 return _listCacheView;
 
             var views = _listViewInit.FindAll(x => x.isInitOnScene);
-            if (views.Count <= 0)
-            {
-                Debug.LogError($"[View] Can't find any view");
-                return null;
-            }
+            if (views.Count > 0) return views;
 
-            return views;
+            LLoger($"[View] Can't find any view", isLog: enableLog);
+            return null;
         }
 
         #endregion
@@ -329,36 +354,72 @@ namespace OSK.UI
 
         public void Hide(View view)
         {
-            if (_viewHistory.Count <= 0) return;
-            if (_viewHistory.Peek() == view)
+            if (view == null || !_listCacheView.Contains(view))
             {
-                Remove();
+                LLoger($"[View] Can't hide: invalid view", isLog: enableLog);
+                return;
+            }
+
+            if (!view.IsShowing)
+            {
+                LLoger($"[View] Can't hide: {view.name} is not showing", isLog: enableLog);
+                return;
+            }
+
+            try
+            {
+                view.Hide();
+            }
+            catch (Exception ex)
+            {
+                LLoger($"[View] Hide failed: {view.name} - {ex.Message}", isLog: enableLog);
             }
         }
 
         public void HideIgnore<T>() where T : View
         {
-            foreach (var view in _listCacheView)
+            foreach (var view in _listCacheView.ToList())
             {
-                if (view is T)
+                if (view == null)
+                {
+                    LLoger($"[View] {nameof(view)} is null in HideIgnore", isLog: enableLog);
                     continue;
-                if (view.IsShowing)
+                }
+
+                if (view is T) continue;
+                if (!view.IsShowing) continue;
+
+                try
                 {
                     view.Hide();
+                }
+                catch (Exception ex)
+                {
+                    LLoger($"[View] Error hiding view {view.name}: {ex.Message}", isLog: enableLog);
                 }
             }
         }
 
         public void HideIgnore<T>(T[] viewsToKeep) where T : View
         {
-            foreach (var view in _listCacheView)
+            foreach (var view in _listCacheView.ToList())
             {
-                if (view is T && !viewsToKeep.Contains(view as T))
+                if (view == null)
                 {
-                    if (view.IsShowing)
-                    {
-                        view.Hide();
-                    }
+                    LLoger($"[View] {nameof(view)}  is null in HideIgnore", isLog: enableLog);
+                    continue;
+                }
+
+                if (view is not T tView || viewsToKeep.Contains(tView)) continue;
+                if (!view.IsShowing) continue;
+
+                try
+                {
+                    view.Hide();
+                }
+                catch (Exception ex)
+                {
+                    LLoger($"[View] Error hiding view {view.name}: {ex.Message}", isLog: enableLog);
                 }
             }
         }
@@ -368,7 +429,21 @@ namespace OSK.UI
             var views = _listCacheView.Where(view => view.IsShowing).ToList();
             foreach (var view in views)
             {
-                view.Hide();
+                if (view == null)
+                {
+                    LLoger($"[View] {nameof(view)} is null in HideAll", isLog: enableLog);
+                    _listCacheView.Remove(view);
+                    continue;
+                }
+
+                try
+                {
+                    view.Hide();
+                }
+                catch (Exception ex)
+                {
+                    LLoger($"[View] Error hiding view: {ex.Message}", isLog: enableLog);
+                }
             }
         }
 
@@ -376,12 +451,19 @@ namespace OSK.UI
 
         #region Remove
 
-        public void RemovePopup(View view)
+        public void Remove(View view)
         {
-            if (_viewHistory.Count <= 0) return;
+            if (view == null || _viewHistory.Count == 0)
+                return;
+
             if (_viewHistory.Peek() == view)
             {
-                Remove();
+                _viewHistory.Pop();
+                Hide(view);
+            }
+            else
+            {
+                LLoger($"[View] Can't remove {view.name}: not on top of history", isLog: enableLog);
             }
         }
 
@@ -402,7 +484,20 @@ namespace OSK.UI
             while (_viewHistory.Count > 0)
             {
                 var curView = _viewHistory.Pop();
-                curView.Hide();
+                if (curView == null)
+                {
+                    LLoger($"[View] {nameof(curView)} null view", isLog: enableLog);
+                    continue;
+                }
+
+                try
+                {
+                    curView.Hide();
+                }
+                catch (Exception ex)
+                {
+                    LLoger($"[View] Error hiding popped view: {ex.Message}", isLog: enableLog);
+                }
             }
         }
 
@@ -415,7 +510,7 @@ namespace OSK.UI
             if (!_listCacheView.Contains(view))
                 return;
 
-            Debug.Log($"[View] Delete view: {view.name}");
+            LLoger($"[View] Delete view: {view.name}", isLog: enableLog);
             _listCacheView.Remove(view);
             Destroy(view.gameObject);
             action?.Invoke();
@@ -459,6 +554,7 @@ namespace OSK.UI
 
             return insertIndex;
         }
+
         #endregion
 
         #region Private
@@ -469,7 +565,7 @@ namespace OSK.UI
 
             if (view != null)
                 return SpawnViewCache(view);
-            Debug.LogError($"[Popup] Can't find popup with path: {path}");
+            LLoger($"[View] Can't find popup with path: {path}");
             return null;
         }
 
@@ -479,5 +575,35 @@ namespace OSK.UI
         }
 
         #endregion
+
+        #region Debug
+
+        public void LogAllViews()
+        {
+            LLoger($"[View] Total views: {_listCacheView.Count}");
+            foreach (var view in _listCacheView)
+            {
+                LLoger($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
+            }
+
+            Debug.Log($"[View] Total views: {_listViewInit.Count}");
+            foreach (var view in _listViewInit)
+            {
+                LLoger($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
+            }
+
+            LLoger($"[View] Total views: {_viewHistory.Count}");
+            foreach (var view in _viewHistory)
+            {
+                LLoger($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
+            }
+        }
+        #endregion
+        
+        private void LLoger(string message, bool isLog = true)
+        {
+            if (isLog)
+                Debug.Log(message);
+        }
     }
 }

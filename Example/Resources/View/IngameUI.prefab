@@ -822,7 +822,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewType: 3
-  depth: 0
+  depth: 1
   isAddToViewManager: 1
   isPreloadSpawn: 1
   isRemoveOnHide: 0

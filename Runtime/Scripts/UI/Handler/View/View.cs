@@ -160,7 +160,7 @@ namespace OSK.UI
             else FinalizeImmediateClose();
         }
 
-        private bool IsViewContainerInitialized()
+        protected bool IsViewContainerInitialized()
         {
             if (_rootUI == null)
             {
@@ -171,33 +171,31 @@ namespace OSK.UI
             return true;
         }
 
-        private bool IsAlreadyShowing()
+        protected bool IsAlreadyShowing()
         {
             if (_isShowing)
             {
-                Debug.LogWarning("View is already showing");
+                Debug.LogWarning("[View] View is already showing");
                 return true;
-            }
-
+            } 
             return false;
         }
 
-        private void FinalizeHide()
+        protected void FinalizeHide()
         {
             gameObject.SetActive(false);
             EventAfterClosed?.Invoke();
 
-            if (isRemoveOnHide) _rootUI.Delete(this);
-            else _rootUI.RemovePopup(this);
+            if (isRemoveOnHide) 
+                _rootUI.Delete(this); 
         }
 
-        private void FinalizeImmediateClose()
+        protected void FinalizeImmediateClose()
         {
-            gameObject.SetActive(false);
-            _rootUI.RemovePopup(this);
+            gameObject.SetActive(false); 
         }
 
-        public void Delete()
+        public virtual void Delete()
         {
             _rootUI.Delete(this);
         }

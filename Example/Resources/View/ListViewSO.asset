@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _listView:
   - path: View/IngameUI.prefab
-    depth: 0
+    depth: 1
     view: {fileID: 6086713787914454507, guid: 1626fb303bfceb742a196679766488b3, type: 3}
   - path: View/MenuUI.prefab
-    depth: 0
+    depth: 2
     view: {fileID: 3278428550634650433, guid: 5ccda247c982733439f1ec518215f564, type: 3}
   - path: View/WinUI.prefab
     depth: 4

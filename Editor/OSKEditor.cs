@@ -49,7 +49,7 @@ namespace OSK.UI
             string[] guids = AssetDatabase.FindAssets("t:ListViewSO");
             if (guids.Length == 0)
             {
-                Debug.LogError("No ListViewSO found in the project.");
+                Debug.Log("No ListViewSO found in the project.");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace OSK.UI
 
             if (viewData.Count == 0)
             {
-                Debug.LogError("No ListViewSO found in the project.");
+                Debug.Log("No ListViewSO found in the project.");
             }
             else
             {
