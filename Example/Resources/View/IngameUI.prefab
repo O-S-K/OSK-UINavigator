@@ -149,7 +149,7 @@ GameObject:
   - component: {fileID: 2461236170702667138}
   - component: {fileID: 3501969137496251490}
   m_Layer: 5
-  m_Name: Button
+  m_Name: WrongButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -406,7 +406,7 @@ GameObject:
   - component: {fileID: 5763094671525349459}
   - component: {fileID: 6949976478366760499}
   m_Layer: 5
-  m_Name: Button (2)
+  m_Name: MenuButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -663,7 +663,7 @@ GameObject:
   - component: {fileID: 1452221505455574133}
   - component: {fileID: 7569786478944053100}
   m_Layer: 5
-  m_Name: Button (1)
+  m_Name: WinButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -782,6 +782,7 @@ GameObject:
   - component: {fileID: 5690990801716254074}
   - component: {fileID: 6086713787914454507}
   - component: {fileID: 1914901387506330656}
+  - component: {fileID: 6199057114890623737}
   m_Layer: 5
   m_Name: IngameUI
   m_TagString: Untagged
@@ -843,9 +844,6 @@ MonoBehaviour:
   EventAfterClosed:
     m_PersistentCalls:
       m_Calls: []
-  wrongButton: {fileID: 3501969137496251490}
-  winButton: {fileID: 7569786478944053100}
-  backMenuButton: {fileID: 6949976478366760499}
 --- !u!222 &1914901387506330656
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -854,6 +852,35 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7267288455399593225}
   m_CullTransparentMesh: 1
+--- !u!114 &6199057114890623737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7267288455399593225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9535ea21f20e6414a839fe1712285ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DataRefs:
+  - name: WrongButton
+    bindObj: {fileID: 3501969137496251490}
+    typeName: Button
+    hasVal: 0
+  - name: WinButton
+    bindObj: {fileID: 7569786478944053100}
+    typeName: Button
+    hasVal: 0
+  - name: MenuButton
+    bindObj: {fileID: 6949976478366760499}
+    typeName: Button
+    hasVal: 0
+  - name: TileText
+    bindObj: {fileID: 2064734903650999260}
+    typeName: TextMeshProUGUI
+    hasVal: 0
 --- !u!1 &7446107139531784363
 GameObject:
   m_ObjectHideFlags: 0
@@ -914,7 +941,7 @@ GameObject:
   - component: {fileID: 543110509237457119}
   - component: {fileID: 2064734903650999260}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: TileText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

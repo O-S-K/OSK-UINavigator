@@ -1,5 +1,6 @@
 using UnityEngine;
 using OSK.UI;
+using Sirenix.OdinInspector;
 using UnityEngine.UI;
 
 namespace Example
@@ -7,12 +8,12 @@ namespace Example
     
     public class MenuUI : View
     {
-        public Button ingameButton;
+        public Button playButton => GetRef<Button>("PlayButton");
     
         public override void Initialize(RootUI rootUI)
         {
             base.Initialize(rootUI);
-            ingameButton.onClick.AddListener(() =>
+            playButton.onClick.AddListener(() =>
             {
                 Hide();
                 UINavigator.Open<IngameUI>();

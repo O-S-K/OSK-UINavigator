@@ -1,16 +1,17 @@
 using UnityEngine;
 using OSK.UI;
+using TMPro;
 using UnityEngine.UI;
 
 namespace Example
 {
     public class IngameUI : View
     {
-        public Button wrongButton;
-        public Button winButton;
-        public Button backMenuButton;
-    
-    
+        public Button wrongButton => GetRef<Button>("WrongButton");
+        public Button winButton => GetRef<Button>("WinButton");
+        public Button menuButton => GetRef<Button>("MenuButton");
+        public TextMeshProUGUI tileText => GetRef<TextMeshProUGUI>("TileText");
+        
         public override void Initialize(RootUI rootUI)
         {
             base.Initialize(rootUI);
@@ -28,7 +29,7 @@ namespace Example
             {
                 UINavigator.Open<WinUI>();
             });
-            backMenuButton.onClick.AddListener(() =>
+            menuButton.onClick.AddListener(() =>
             {
                 Hide();
                 UINavigator.Open<MenuUI>();
@@ -38,6 +39,7 @@ namespace Example
         public override void Open(object[] data = null)
         {
             base.Open(data);
+            tileText.text = "Ingame";
         }
     
 

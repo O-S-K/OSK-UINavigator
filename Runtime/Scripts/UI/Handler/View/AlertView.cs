@@ -19,7 +19,7 @@ namespace OSK.UI
         public Button okButton;
         public Button cancelButton;
 
-        public void SetData(AlertSetup setup)
+        public virtual void SetData(AlertSetup setup)
         {
             SetTile(setup.title);
             SetMessage(setup.message);
@@ -84,7 +84,7 @@ namespace OSK.UI
             }
         }
 
-        public void SetTimeHide(float time)
+        public virtual void SetTimeHide(float time)
         {
             if (time <= 0)
                 return;

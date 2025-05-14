@@ -4,6 +4,9 @@
 It supports stack-based navigation, smooth transitions, caching, and dynamic view handling—all while remaining easy to integrate and extend.
 
 ---
+v1.1.0
+- Add feature Bind Data UI
+- Auto get Refs easy to UI
 
 ## ✨ Key Features
 

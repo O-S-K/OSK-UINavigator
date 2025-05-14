@@ -285,7 +285,7 @@ GameObject:
   - component: {fileID: 487053963570270705}
   - component: {fileID: 5621998653887954213}
   m_Layer: 5
-  m_Name: Button
+  m_Name: PlayButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -404,6 +404,7 @@ GameObject:
   - component: {fileID: 6184899010616113930}
   - component: {fileID: 6472177920349174968}
   - component: {fileID: 3278428550634650433}
+  - component: {fileID: 6482666605970030757}
   m_Layer: 5
   m_Name: MenuUI
   m_TagString: Untagged
@@ -474,7 +475,23 @@ MonoBehaviour:
   EventAfterClosed:
     m_PersistentCalls:
       m_Calls: []
-  ingameButton: {fileID: 5621998653887954213}
+--- !u!114 &6482666605970030757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4827728819338799291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9535ea21f20e6414a839fe1712285ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DataRefs:
+  - name: PlayButton
+    bindObj: {fileID: 5621998653887954213}
+    typeName: Button
+    hasVal: 0
 --- !u!1 &7123918659971965308
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6892180407402687998}
   - component: {fileID: 502462193091814181}
   m_Layer: 5
-  m_Name: Button
+  m_Name: CloseButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 869596352733549690}
   - component: {fileID: 4127840579734859209}
   m_Layer: 5
-  m_Name: Shield
+  m_Name: ShieldImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -206,7 +206,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2363702706162485603}
   m_Layer: 5
-  m_Name: Container
+  m_Name: ContainerRect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -246,7 +246,7 @@ GameObject:
   - component: {fileID: 1731017543383945511}
   - component: {fileID: 4873336230241855827}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -382,7 +382,7 @@ GameObject:
   - component: {fileID: 5463170252130421897}
   - component: {fileID: 5252534562855878605}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -516,10 +516,11 @@ GameObject:
   m_Component:
   - component: {fileID: 8300757458253589687}
   - component: {fileID: 8821420549237335274}
-  - component: {fileID: 682491240513839910}
-  - component: {fileID: 8408488481882923505}
+  - component: {fileID: 490956517829589033}
+  - component: {fileID: 1948342141050936739}
+  - component: {fileID: 945063751335675323}
   m_Layer: 5
-  m_Name: Button (1)
+  m_Name: RewardButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -553,7 +554,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3278853794284823954}
   m_CullTransparentMesh: 1
---- !u!114 &682491240513839910
+--- !u!114 &490956517829589033
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -562,28 +563,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 3278853794284823954}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: 616eac31ca53d9a4d8262b4c7575332d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!114 &8408488481882923505
+--- !u!114 &1948342141050936739
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -623,10 +606,40 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 682491240513839910}
+  m_TargetGraphic: {fileID: 945063751335675323}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &945063751335675323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3278853794284823954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &5949154470423308682
 GameObject:
   m_ObjectHideFlags: 0
@@ -639,6 +652,7 @@ GameObject:
   - component: {fileID: 2877380379264299323}
   - component: {fileID: 1171863921498752099}
   - component: {fileID: 4036481021684706390}
+  - component: {fileID: 7815935376461945800}
   m_Layer: 5
   m_Name: WinUI
   m_TagString: Untagged
@@ -701,8 +715,6 @@ MonoBehaviour:
   EventAfterClosed:
     m_PersistentCalls:
       m_Calls: []
-  closeButton: {fileID: 502462193091814181}
-  wrongButton: {fileID: 8408488481882923505}
 --- !u!225 &1171863921498752099
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -793,6 +805,31 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     animationClip: {fileID: 0}
+--- !u!114 &7815935376461945800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5949154470423308682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9535ea21f20e6414a839fe1712285ba1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DataRefs:
+  - name: CloseButton
+    bindObj: {fileID: 502462193091814181}
+    typeName: Button
+    hasVal: 0
+  - name: RewardButton
+    bindObj: {fileID: 1948342141050936739}
+    typeName: Button
+    hasVal: 0
+  - name: TileText
+    bindObj: {fileID: 6893030716361744088}
+    typeName: TextMeshProUGUI
+    hasVal: 0
 --- !u!1 &8710742506661560214
 GameObject:
   m_ObjectHideFlags: 0
@@ -805,7 +842,7 @@ GameObject:
   - component: {fileID: 3747181571172968784}
   - component: {fileID: 6893030716361744088}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: TileText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

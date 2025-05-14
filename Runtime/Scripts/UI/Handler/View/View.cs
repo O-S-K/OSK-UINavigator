@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 using Sirenix.OdinInspector;
 
 namespace OSK.UI
@@ -30,6 +31,17 @@ namespace OSK.UI
         [ShowIf(nameof(isShowEvent))] public UnityEvent EventAfterOpened;
         [ShowIf(nameof(isShowEvent))] public UnityEvent EventBeforeClosed;
         [ShowIf(nameof(isShowEvent))] public UnityEvent EventAfterClosed;
+        
+        protected IReferenceHolder _referenceHolder;
+        public IReferenceHolder ReferenceHolder
+        {
+            get
+            {
+                if (_referenceHolder == null)
+                    _referenceHolder = GetComponent<IReferenceHolder>();
+                return _referenceHolder;
+            }
+        }
 
         [Button]
         public void AddUITransition()
@@ -37,7 +49,6 @@ namespace OSK.UI
             _uiTransition = gameObject.GetOrAddComponent<UITransition>();
             Debug.Log("UITransition added.");
         }
-
         [Button]
         public void AddShield()
         {
@@ -63,6 +74,19 @@ namespace OSK.UI
             UnityEngine.UI.Image img = go.GetOrAddComponent<UnityEngine.UI.Image>();
             img.color = new Color(0, 0, 0, 0.9f);
         }
+        [Button]
+        public void AddBindRef()
+        {
+            if (GetComponent<IReferenceHolder>() != null)
+            {
+                Debug.LogWarning("ReferenceHolder already exists.");
+                return;
+            }
+       
+            gameObject.AddComponent<MonoReferenceHolder>();
+            Debug.Log("ReferenceHolder added.");
+        }
+        
 
         public virtual void Initialize(RootUI rootUI)
         {
@@ -73,6 +97,7 @@ namespace OSK.UI
 
             _uiTransition = GetComponent<UITransition>();
             _uiTransition?.Initialize();
+            _referenceHolder = GetComponent<IReferenceHolder>();
 
             if (_rootUI == null)
             {
@@ -122,6 +147,12 @@ namespace OSK.UI
                 if (insertIndex == childPages.Count) transform.SetAsLastSibling();
                 else transform.SetSiblingIndex(insertIndex);
             }
+        }
+        
+        public void IterateRefs(System.Action<string, object> func) => _referenceHolder.Foreach(func);
+        public T GetRef<T>(string name, bool isTry = false) where T : Object
+        {
+            return _referenceHolder.GetRef<T>(name, isTry);
         }
 
 
@@ -198,6 +229,12 @@ namespace OSK.UI
         public virtual void Delete()
         {
             _rootUI.Delete(this);
+        }
+        
+        protected IEnumerator DelayCall(System.Action callback, float delay = 0.0f)
+        {
+            yield return new WaitForSeconds(delay);
+            callback?.Invoke();
         }
     }
 }
