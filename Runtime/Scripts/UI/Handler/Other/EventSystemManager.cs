@@ -26,7 +26,7 @@ namespace OSK.UI
                 case 0:
                     Debug.LogError("EventSystem not found in the scene. Adding a new one.");
                     break;
-            }
+            } 
         }
     }
 }
