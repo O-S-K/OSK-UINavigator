@@ -18,6 +18,7 @@ v1.1.0
   - `Open<T>()`: Open a view with optional data and hide previous UI.
   - `Hide(View)`: Hide a specific view.
   - `HideAll()`, `HideAllIgnoreView<T>()`: Close all UI views with optional exclusions.
+  - `OpenAddStack<T>()`: Adds multiple specified popups to the stack, displayed one by one until the last popup is added to the stack
   - `OpenAlert<T>()`: Open an alert modal with custom setup.
 
 - **View Caching**  
