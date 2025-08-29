@@ -33,6 +33,8 @@ namespace Example
         {
             base.Open(data);
             tileText.text = "Win";
+            UINavigator.OpenAddStack<Notif1UI>();
+            UINavigator.OpenAddStack<Notif2UI>();
         }
 
         public override void Hide()

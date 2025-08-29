@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Sirenix.OdinInspector;
 using System.Collections.Generic;
@@ -80,6 +81,16 @@ namespace OSK.UI
         {
             return Instance.RootUI.OpenAlert<T>(setup);
         }
+        
+        public static void OpenAddStack<T>(object[] data = null, bool hidePrevView = false, Action<T> onOpened = null) where T : View
+        {
+            Instance.RootUI.OpenAddStack<T>(data, hidePrevView, onOpened);
+        }
+        
+        public static void OpenAddStack(View view, object[] data = null, bool hidePrevView = false) 
+        {
+            Instance.RootUI.OpenAddStack(view, data, hidePrevView);
+        }
 
         public static void Hide(View view)
         {
@@ -105,7 +116,6 @@ namespace OSK.UI
         {
             Instance.RootUI.Delete<T>(popup);
         }
-
 
         public static T Get<T>(bool isInitOnScene = true) where T : View
         {

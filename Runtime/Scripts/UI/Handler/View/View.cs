@@ -11,6 +11,11 @@ namespace OSK.UI
         public EViewType viewType = EViewType.Popup;
 
         public int depth;
+        
+        public int Priority => _priority;
+
+        [SerializeField]
+        private int _priority; // used for sorting views, higher value means higher priority in the stack
 
         [Space] [ToggleLeft] public bool isAddToViewManager = true;
         [ToggleLeft] public bool isPreloadSpawn = true;

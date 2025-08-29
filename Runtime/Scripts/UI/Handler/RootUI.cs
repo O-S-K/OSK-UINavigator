@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
@@ -10,43 +11,124 @@ namespace OSK.UI
     [DefaultExecutionOrder(-101)]
     public class RootUI : MonoBehaviour
     {
-        [ShowInInspector, ReadOnly] [SerializeField]
-        private List<View> _listViewInit = new List<View>();
+        private class QueuedView
+        {
+            public View view;
+            public object[] data;
+            public bool hidePrevView;
+            public Action<View> onOpened;
+        }
 
-        [ShowInInspector, ReadOnly] [SerializeField]
-        private List<View> _listCacheView = new List<View>();
+        #region Lists
 
-        private Stack<View> _viewHistory = new Stack<View>();
+        [BoxGroup("🔍 Views", ShowLabel = true)] 
+        [ShowInInspector, ReadOnly] [SerializeField]
+        private List<View> _listViewInit = new();
+
+        [BoxGroup("🔍 Views")] [ShowInInspector, ReadOnly] [SerializeField]
+        private List<View> _listCacheView = new();
+
+        [HideInInspector] // Ẩn Stack nếu không cần xem
+        private Stack<View> _viewHistory = new();
+
+        [ShowInInspector, BoxGroup("🔍 Views")]
         public Stack<View> ListViewHistory => _viewHistory;
+
+        [ShowInInspector, BoxGroup("🔍 Views")]
+        public List<View> ListCacheView => _listCacheView;
+
+        [ShowInInspector, BoxGroup("🔍 Views")]
         public List<View> ListViewInit => _listViewInit;
 
-        public ListViewSO listViewSO;
-        [SerializeField] private Camera _uiCamera;
-        [SerializeField] private Canvas _canvas;
-        [SerializeField] private CanvasScaler _canvasScaler;
-        [SerializeField] private Transform _viewContainer;
+        [ShowInInspector, ReadOnly] private List<QueuedView> _queuedViews = new List<QueuedView>();
 
-        [SerializeField] private bool isPortrait = true;
-        [SerializeField] private bool dontDestroyOnLoad = true;
-        [SerializeField] private bool enableLog = true;
+        [ShowInInspector, ReadOnly] private bool _isProcessingQueue = false;
+
+        #endregion
+
+        #region References
+
+        public ListViewSO listViewSO;
+
+        [Title("📌 References")] [Required, BoxGroup("📌 References")] [SerializeField]
+        private Camera _uiCamera;
+
+        [Required, BoxGroup("📌 References")] [SerializeField]
+        private Canvas _canvas;
+
+        [Required, BoxGroup("📌 References")] [SerializeField]
+        private CanvasScaler _canvasScaler;
+
+        [BoxGroup("📌 References")] [SerializeField]
+        private Transform _viewContainer;
+
+        #endregion
+
+        #region Settings
+
+        [Title("⚙️ Settings")] [BoxGroup("⚙️ Settings")] [SerializeField]
+        private bool isPortrait = true;
+
+        [BoxGroup("⚙️ Settings")] [SerializeField]
+        private bool dontDestroyOnLoad = true;
+
+        [BoxGroup("⚙️ Settings")] [SerializeField]
+        private bool isUpdateRatioScaler = true;
+
+        [BoxGroup("⚙️ Settings")] [SerializeField]
+        private bool enableLog = true;
+
+        #endregion
 
         public Canvas GetCanvas => _canvas;
         public CanvasScaler GetCanvasScaler => _canvasScaler;
         public Camera GetUICamera => _uiCamera;
         public Transform GetViewContainer => _viewContainer;
 
-        private void Awake()
-        {
-            if (dontDestroyOnLoad)
-                DontDestroyOnLoad(gameObject);
-        }
+        public bool IsPortrait => isPortrait;
+        public bool EnableLog => enableLog;
 
         public void Initialize()
-        { 
+        {
             if (listViewSO != null)
             {
                 Preload();
-            } 
+            }
+        }
+
+        public void SetupCanvasScaleForRatio()
+        { 
+            float ratio = (float)Screen.width / Screen.height;
+            if (IsIpad())
+            {
+                // For iPad, use MatchWidthOrHeight = 0 to maintain aspect ratio
+                GetCanvasScaler.matchWidthOrHeight = 0f;
+            }
+            else
+            {
+                // For other devices, use MatchWidthOrHeight = 1 if the aspect ratio is wider than 0.65f
+                GetCanvasScaler.matchWidthOrHeight = ratio > 0.65f ? 1 : 0;
+            }
+            
+            string log = Mathf.Approximately(GetCanvasScaler.matchWidthOrHeight, 1f) ? "1 (Match Width)" : "0 (Match Height)";
+            Debug.Log($"Ratio: {ratio}. IsPad {IsIpad()} matchWidthOrHeight: {log}");
+        }
+        
+        public  bool IsIpad()
+        {
+#if (UNITY_IOS || UNITY_IPHONE) && !UNITY_EDITOR
+            if (UnityEngine.iOS.Device.generation.ToString().Contains("iPad"))
+                return true;
+#endif
+
+            float w = Screen.width;
+            float h = Screen.height;
+
+            // Normalize to portrait
+            if (w > h) (w, h) = (h, w);
+
+            // Aspect ratio check (iPad thường ~ 4:3 → ~1.33)
+            return (h / w) < 1.65f;
         }
 
         public void SetupCanvas()
@@ -73,8 +155,7 @@ namespace OSK.UI
 
                 UnityEditor.EditorUtility.SetDirty(_canvas);
                 UnityEditor.EditorUtility.SetDirty(_canvasScaler);
-                UnityEditor.EditorUtility.SetDirty(gameObject); // Optional
-
+                UnityEditor.EditorUtility.SetDirty(gameObject);
                 Debug.Log($"[SetupCanvas] IsPortrait: {isPortrait} => Saved to prefab instance");
             }
 #endif
@@ -105,7 +186,7 @@ namespace OSK.UI
 
         #endregion
 
-         #region Spawn
+        #region Spawn
 
         public T Spawn<T>(T view, object[] data, bool hidePrevView) where T : View
         {
@@ -137,7 +218,7 @@ namespace OSK.UI
             _view.transform.localPosition = Vector3.zero;
             _view.transform.localScale = Vector3.one;
 
-            LLoger($"[View] Spawn view: {_view.name}", isLog: enableLog);
+            Debug.Log($"[View] Spawn view: {_view.name}");
             if (!_listCacheView.Contains(_view))
                 _listCacheView.Add(_view);
             return _view;
@@ -152,7 +233,7 @@ namespace OSK.UI
             _view.transform.localPosition = Vector3.zero;
             _view.transform.localScale = Vector3.one;
 
-            LLoger($"[View] Spawn Alert view: {_view.name}", isLog: enableLog);
+            Debug.Log($"[View] Spawn Alert view: {_view.name}");
             return _view;
         }
 
@@ -162,7 +243,7 @@ namespace OSK.UI
 
         public View Open(View view, object[] data = null, bool hidePrevView = false, bool checkShowing = true)
         {
-            var _view = _listCacheView.FirstOrDefault(v => v == view);
+            var _view = _listCacheView.FirstOrDefault(v => v.GetType() == view.GetType());
             if (hidePrevView && _viewHistory.Count > 0)
             {
                 var prevView = _viewHistory.Peek();
@@ -171,10 +252,10 @@ namespace OSK.UI
 
             if (_view == null)
             {
-                var viewPrefab = _listViewInit.FirstOrDefault(v => v == view);
+                var viewPrefab = _listViewInit.FirstOrDefault(v => v.GetType() == view.GetType());
                 if (viewPrefab == null)
                 {
-                    LLoger($"[View] Can't find view prefab for type: {view.GetType().Name}", isLog: enableLog);
+                    Debug.LogError($"[View] Can't find view prefab for type: {view.GetType().Name}");
                     return null;
                 }
 
@@ -183,19 +264,19 @@ namespace OSK.UI
 
             if (_view.IsShowing && checkShowing)
             {
-                LLoger($"[View] Opened view IsShowing: {_view.name}", isLog: enableLog);
+                Debug.Log($"[View] Opened view IsShowing: {_view.name}");
                 return _view;
             }
 
             _view.Open(data);
             _viewHistory.Push(_view);
-            LLoger($"[View] Opened view: {_view.name}", isLog: enableLog);
+            Debug.Log($"[View] Opened view: {_view.name}");
             return _view;
         }
 
         public T Open<T>(object[] data = null, bool hidePrevView = false, bool checkShowing = true) where T : View
         {
-            var _view = _listCacheView.FirstOrDefault(v => v is T && v != null) as T;
+            var _view = _listCacheView.FirstOrDefault(v => v.GetType() == typeof(T)) as T;
             if (hidePrevView && _viewHistory.Count > 0)
             {
                 var prevView = _viewHistory.Peek();
@@ -204,10 +285,10 @@ namespace OSK.UI
 
             if (_view == null)
             {
-                var viewPrefab = _listViewInit.FirstOrDefault(v => v is T && v !) as T;
+                var viewPrefab = _listViewInit.FirstOrDefault(v => v.GetType() == typeof(T)) as T;
                 if (viewPrefab == null)
                 {
-                    LLoger($"[View] Can't find view prefab for type: {typeof(T).Name}", isLog: enableLog);
+                    Debug.LogError($"[View] Can't find view prefab for type: {typeof(T).Name}");
                     return null;
                 }
 
@@ -216,13 +297,13 @@ namespace OSK.UI
 
             if (_view.IsShowing && checkShowing)
             {
-                LLoger($"[View] Opened view: {_view.name}", isLog: enableLog);
+                Debug.Log($"[View] Opened view: {_view.name}");
                 return _view;
             }
 
             _view.Open(data);
             _viewHistory.Push(_view);
-            LLoger($"[View] Opened view: {_view.name}", isLog: enableLog);
+            Debug.Log($"[View] Opened view: {_view.name}");
             return _view;
         }
 
@@ -230,7 +311,88 @@ namespace OSK.UI
         {
             return Open<T>(data, hidePrevView, false);
         }
+        
+        public void OpenAddStack(View view, object[] data = null, bool hidePrevView = false)
+        {
+            _queuedViews.Add(new QueuedView
+            {
+                view = view,
+                data = data,
+                hidePrevView = hidePrevView
+            });
 
+            // Sort the queue by priority
+            _queuedViews = _queuedViews.OrderByDescending(q => q.view.depth).ToList();
+
+            if (!_isProcessingQueue)
+            {
+                StartCoroutine(ProcessQueue());
+            }
+        }
+        
+        public void OpenAddStack<T>(object[] data = null, bool hidePrev = false, Action<T> onOpened = null) where T : View
+        {
+            var _view = _listCacheView.FirstOrDefault(v => v is T) as T;
+
+            if (_view == null)
+            {
+                var prefab = _listViewInit.FirstOrDefault(v => v is T) as T;
+                if (prefab == null)
+                {
+                    Debug.LogError($"[OpenAddStack<{typeof(T).Name}>] Not found view prefab for type: {typeof(T).Name}");
+                    return;
+                }
+
+                _view = SpawnViewCache(prefab);
+            }
+
+            var queued = new QueuedView
+            {
+                view = _view,
+                data = data,
+                hidePrevView = hidePrev,
+                onOpened = v => onOpened?.Invoke(v as T)
+            };
+
+            _queuedViews.Add(queued);
+ 
+            // Allways sort the queue by priority
+            if (!_isProcessingQueue)
+                StartCoroutine(ProcessQueue());
+        }
+
+        
+        private IEnumerator ProcessQueue()
+        {
+            _isProcessingQueue = true;
+
+            while (_queuedViews.Count > 0)
+            {
+                // Get the next view in the queue that is not showing
+                var next = _queuedViews
+                    .Where(q => q.view != null && !q.view.IsShowing)
+                    .OrderByDescending(q => q.view.Priority) //  Sort by priority
+                    .FirstOrDefault();
+
+                if (next == null)
+                {
+                    //  All views are already showing or null, wait for next frame
+                    yield return null;
+                    continue;
+                }
+                 
+                var openedView = Open(next.view, next.data, next.hidePrevView);
+                next.onOpened?.Invoke(openedView);
+
+                // Wait  until the view is closed
+                yield return new WaitUntil(() => next.view == null || !next.view.IsShowing);
+                // Remove view from queue
+                _queuedViews.Remove(next);
+            }
+
+            _isProcessingQueue = false;
+        }
+        
         /// <summary>
         /// Open previous view in history
         /// </summary>
@@ -238,7 +400,7 @@ namespace OSK.UI
         {
             if (_viewHistory.Count <= 1)
             {
-                LLoger("[View] No previous view to open", isLog: enableLog);
+                Debug.LogWarning("[View] No previous view to open");
                 return null;
             }
 
@@ -253,7 +415,7 @@ namespace OSK.UI
                 }
                 catch (Exception ex)
                 {
-                    LLoger($"[View] Error hiding current view: {ex.Message}", isLog: enableLog);
+                    Debug.LogError($"[View] Error hiding current view: {ex.Message}");
                 }
             }
 
@@ -261,12 +423,12 @@ namespace OSK.UI
             var previousView = _viewHistory.Peek();
             if (previousView == null || previousView.Equals(null))
             {
-                LLoger("[View] Previous view is null or destroyed", isLog: enableLog);
+                Debug.LogWarning("[View] Previous view is null or destroyed");
                 return null;
             }
 
             previousView.Open(data);
-            LLoger($"[View] Opened previous view: {previousView.name}", isLog: enableLog);
+            Debug.Log($"[View] Opened previous view: {previousView.name}");
             return previousView;
         }
 
@@ -275,17 +437,16 @@ namespace OSK.UI
         /// </summary>
         public AlertView OpenAlert<T>(AlertSetup setup) where T : AlertView
         {
-            var viewPrefab = _listViewInit.FirstOrDefault(v => v is T) as T;
+            var viewPrefab = _listViewInit.FirstOrDefault(v => v.GetType() == typeof(T)) as T;
             if (viewPrefab == null)
             {
-                LLoger($"[View] Can't find view prefab for type: {typeof(T).Name}", isLog: enableLog);
+                Debug.LogError($"[View] Can't find view prefab for type: {typeof(T).Name}");
                 return null;
             }
 
             var view = SpawnAlert(viewPrefab);
-            view.Open();
-            view.SetData(setup);
-            LLoger($"[View] Opened view: {view.name}", isLog: enableLog);
+            view.Open(new object[] { setup });
+            Debug.Log($"[View] Opened view: {view.name}");
             return view;
         }
 
@@ -298,13 +459,13 @@ namespace OSK.UI
             var _view = GetAll(isInitOnScene).Find(x => x == view);
             if (_view == null)
             {
-                LLoger($"[View] Can't find view: {view.name}", isLog: enableLog);
+                Debug.LogError($"[View] Can't find view: {view.name}");
                 return null;
             }
 
             if (!_view.isInitOnScene)
             {
-                LLoger($"[View] {view.name} is not init on scene", isLog: enableLog);
+                Debug.LogError($"[View] {view.name} is not init on scene");
             }
 
             return _view;
@@ -315,13 +476,13 @@ namespace OSK.UI
             var _view = GetAll(isInitOnScene).Find(x => x is T) as T;
             if (_view == null)
             {
-                LLoger($"[View] Can't find view: {typeof(T).Name}", isLog: enableLog);
+                Debug.LogError($"[View] Can't find view: {typeof(T).Name}");
                 return null;
             }
 
             if (!_view.isInitOnScene)
             {
-                LLoger($"[View] {typeof(T).Name} is not init on scene", isLog: enableLog);
+                Debug.LogError($"[View] {typeof(T).Name} is not init on scene");
             }
 
             return _view;
@@ -330,21 +491,29 @@ namespace OSK.UI
         public View Get(View view)
         {
             var _view = GetAll(true).Find(x => x == view);
-            if (_view != null) return _view;
+            if (_view != null)
+            {
+                Debug.Log($"[View] Found view: {_view.name} is showing {_view.IsShowing}");
+                return _view;
+            }
 
-            LLoger($"[View] Can't find view: {view.name}", isLog: enableLog);
+            Debug.LogError($"[View] Can't find view: {view.name}");
             return null;
         }
 
         public List<View> GetAll(bool isInitOnScene)
         {
-            if (isInitOnScene)
+            if (isInitOnScene) // check if the view is already initialized
                 return _listCacheView;
 
             var views = _listViewInit.FindAll(x => x.isInitOnScene);
-            if (views.Count > 0) return views;
+            if (views.Count > 0)
+            {
+                Debug.Log($"[View] Found {views.Count} views");
+                return views;
+            }
 
-            LLoger($"[View] Can't find any view", isLog: enableLog);
+            Debug.LogError($"[View] Can't find any view");
             return null;
         }
 
@@ -356,13 +525,13 @@ namespace OSK.UI
         {
             if (view == null || !_listCacheView.Contains(view))
             {
-                LLoger($"[View] Can't hide: invalid view", isLog: enableLog);
+                Debug.LogError($"[View] Can't hide: invalid view");
                 return;
             }
 
             if (!view.IsShowing)
             {
-                LLoger($"[View] Can't hide: {view.name} is not showing", isLog: enableLog);
+                Debug.Log($"[View] Can't hide: {view.name} is not showing");
                 return;
             }
 
@@ -372,7 +541,7 @@ namespace OSK.UI
             }
             catch (Exception ex)
             {
-                LLoger($"[View] Hide failed: {view.name} - {ex.Message}", isLog: enableLog);
+                Debug.LogError($"[View] Hide failed: {view.name} - {ex.Message}");
             }
         }
 
@@ -382,7 +551,7 @@ namespace OSK.UI
             {
                 if (view == null)
                 {
-                    LLoger($"[View] {nameof(view)} is null in HideIgnore", isLog: enableLog);
+                    Debug.Log($"[View] {nameof(view)} is null in HideIgnore");
                     continue;
                 }
 
@@ -395,7 +564,7 @@ namespace OSK.UI
                 }
                 catch (Exception ex)
                 {
-                    LLoger($"[View] Error hiding view {view.name}: {ex.Message}", isLog: enableLog);
+                    Debug.LogError($"[View] Error hiding view {view.name}: {ex.Message}");
                 }
             }
         }
@@ -406,7 +575,7 @@ namespace OSK.UI
             {
                 if (view == null)
                 {
-                    LLoger($"[View] {nameof(view)}  is null in HideIgnore", isLog: enableLog);
+                    Debug.Log($"[View] {nameof(view)}  is null in HideIgnore");
                     continue;
                 }
 
@@ -419,7 +588,7 @@ namespace OSK.UI
                 }
                 catch (Exception ex)
                 {
-                    LLoger($"[View] Error hiding view {view.name}: {ex.Message}", isLog: enableLog);
+                    Debug.LogError($"[View] Error hiding view {view.name}: {ex.Message}");
                 }
             }
         }
@@ -431,7 +600,7 @@ namespace OSK.UI
             {
                 if (view == null)
                 {
-                    LLoger($"[View] {nameof(view)} is null in HideAll", isLog: enableLog);
+                    Debug.LogError($"[View] {nameof(view)} is null in HideAll");
                     _listCacheView.Remove(view);
                     continue;
                 }
@@ -442,7 +611,7 @@ namespace OSK.UI
                 }
                 catch (Exception ex)
                 {
-                    LLoger($"[View] Error hiding view: {ex.Message}", isLog: enableLog);
+                    Debug.LogError($"[View] Error hiding view: {ex.Message}");
                 }
             }
         }
@@ -463,7 +632,7 @@ namespace OSK.UI
             }
             else
             {
-                LLoger($"[View] Can't remove {view.name}: not on top of history", isLog: enableLog);
+                Debug.LogWarning($"[View] Can't remove {view.name}: not on top of history");
             }
         }
 
@@ -486,7 +655,7 @@ namespace OSK.UI
                 var curView = _viewHistory.Pop();
                 if (curView == null)
                 {
-                    LLoger($"[View] {nameof(curView)} null view", isLog: enableLog);
+                    Debug.LogWarning($"[View] {nameof(curView)} null view");
                     continue;
                 }
 
@@ -496,7 +665,7 @@ namespace OSK.UI
                 }
                 catch (Exception ex)
                 {
-                    LLoger($"[View] Error hiding popped view: {ex.Message}", isLog: enableLog);
+                    Debug.LogError($"[View] Error hiding popped view: {ex.Message}");
                 }
             }
         }
@@ -510,10 +679,10 @@ namespace OSK.UI
             if (!_listCacheView.Contains(view))
                 return;
 
-            LLoger($"[View] Delete view: {view.name}", isLog: enableLog);
+            Debug.Log($"[View] Delete view: {view.name}");
             _listCacheView.Remove(view);
-            Destroy(view.gameObject);
             action?.Invoke();
+            Destroy(view.gameObject);
         }
 
         #endregion
@@ -562,10 +731,9 @@ namespace OSK.UI
         private T SpawnFromResource<T>(string path) where T : View
         {
             var view = Instantiate(Resources.Load<T>(path), _viewContainer);
-
             if (view != null)
                 return SpawnViewCache(view);
-            LLoger($"[View] Can't find popup with path: {path}");
+            Debug.LogError($"[View] Can't find popup with path: {path}");
             return null;
         }
 
@@ -580,30 +748,25 @@ namespace OSK.UI
 
         public void LogAllViews()
         {
-            LLoger($"[View] Total views: {_listCacheView.Count}");
+            Debug.Log($"[View] Total views: {_listCacheView.Count}");
             foreach (var view in _listCacheView)
             {
-                LLoger($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
+                Debug.Log($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
             }
 
             Debug.Log($"[View] Total views: {_listViewInit.Count}");
             foreach (var view in _listViewInit)
             {
-                LLoger($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
+                Debug.Log($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
             }
 
-            LLoger($"[View] Total views: {_viewHistory.Count}");
+            Debug.Log($"[View] Total views: {_viewHistory.Count}");
             foreach (var view in _viewHistory)
             {
-                LLoger($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
+                Debug.Log($"[View] View: {view.name} - IsShowing: {view.IsShowing}");
             }
         }
+
         #endregion
-        
-        private void LLoger(string message, bool isLog = true)
-        {
-            if (isLog)
-                Debug.Log(message);
-        }
     }
 }

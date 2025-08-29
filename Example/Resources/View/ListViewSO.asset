@@ -25,3 +25,9 @@ MonoBehaviour:
   - path: View/WrongUI.prefab
     depth: 5
     view: {fileID: 1286883603557997864, guid: 9504e78db0f4bdc4d9ee9a72a249b29a, type: 3}
+  - path: View/Notif1.prefab
+    depth: 5
+    view: {fileID: 2877380379264299323, guid: 3cf5b73daae8e7749b5b3cc1c3a0346b, type: 3}
+  - path: View/Notif2.prefab
+    depth: 5
+    view: {fileID: 2877380379264299323, guid: 3c761756336539944a25e2e96b0501fe, type: 3}
