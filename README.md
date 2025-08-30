@@ -8,6 +8,9 @@ v1.1.0
 - Add feature Bind Data UI
 - Auto get Refs easy to UI
 
+- v1.2.0
+- Add OpenAddStack
+
 ## ✨ Key Features
 
 - **Root UI Management**  
@@ -57,6 +60,10 @@ UINavigator.OpenAlert<MyAlertView>(new AlertSetup
     title = "Warning",
     message = "Are you sure you want to quit?"
 });
+
+// Open and add Stack
+ UINavigator.OpenAddStack<Notif1UI>();
+ UINavigator.OpenAddStack<Notif2UI>();
 ```
 ---
 
